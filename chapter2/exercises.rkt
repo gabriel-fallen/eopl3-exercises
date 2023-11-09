@@ -136,6 +136,50 @@
 
 
 
+;;; Exercise 2.11
+
+;; The ribcage environment representation
+
+;; Env ::= () | ( (Var-list . Val-list) . Env )
+
+(define empty-env (λ () '()))
+
+
+(define empty-env? null?)
+
+(check-not-false (empty-env? (empty-env)))
+
+
+(define (extend-env var val env)
+  `( ((,var) . (,val)) . ,env))
+
+(define (extend-env* vars vals env)
+  `( (,vars . ,vals) . ,env))
+
+
+(define (apply-env env var)
+  (if (empty-env? env)
+      (error 'apply-env "Empty environment")
+      (let ([vars (caar env)]
+            [vals (cdar env)]
+            [env1 (cdr env)])
+        (let ([i (index-of vars var)])
+          (if (not i) ; i is #f meaning the var wasn't found in the list of vars
+              (apply-env env1 var)
+              (list-ref vals i))))))
+
+; some tests
+(define test-env (extend-env* '(w z) '(#f foo) (extend-env* '(x y z) '(11 12 14) (empty-env))))
+
+(check-equal? (apply-env test-env 'y) 12)
+(check-equal? (apply-env test-env 'z) 'foo)
+(check-equal? (apply-env test-env 'w) #f)
+
+
+
+
+
+
 
 
 
