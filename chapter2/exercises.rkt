@@ -177,6 +177,68 @@
 
 
 
+;;; Exercise 2.18
+;;; aka (list) Zipper
+
+;; NodeInSequence ::= (Int Listof(Int) Listof(Int))
+;;  implement number->sequence, current-element, move-to-left, move-to-right, insert-to-left, insert-to-right, at-left-end?, and at-right-end?
+
+(define (number->sequence x)
+  (list x '() '()))
+
+
+(define (current-element z)
+  (first z))
+
+
+(for ([x (in-range -5 5)])
+  (check-equal? (current-element (number->sequence x)) x))
+
+
+; (move-to-left '(3 (2 1) (4))) ≡ '(2 (1) (3 4))
+(define (move-to-left z)
+  (let ([x (first z)]
+        [l (second z)]
+        [r (third z)])
+    (list (first l) (rest l) (cons x r))))
+
+(check-equal? (move-to-left '(3 (2 1) (4))) '(2 (1) (3 4)))
+
+
+; (move-to-right '(3 (2 1) (4))) ≡ '(4 (3 2 1) ())
+(define (move-to-right z)
+  (let ([x (first z)]
+        [l (second z)]
+        [r (third z)])
+    (list (first r) (cons x l) (rest r))))
+
+(check-equal? (move-to-right '(3 (2 1) (4))) '(4 (3 2 1) ()))
+
+
+(define (insert-to-left y z)
+  (let ([x (first z)]
+        [l (second z)]
+        [r (third z)])
+    (list x (cons y l) r)))
+
+
+(define (insert-to-right y z)
+  (let ([x (first z)]
+        [l (second z)]
+        [r (third z)])
+    (list x l (cons y r))))
+
+
+(define (at-left-end? z)
+  (null? (second z)))
+
+
+(define (at-right-end? z)
+  (null? (third z)))
+
+
+
+
 
 
 
