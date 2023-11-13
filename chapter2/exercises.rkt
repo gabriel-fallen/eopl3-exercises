@@ -284,6 +284,36 @@
 
 
 
+;;; Exercise 2.31
+
+(struct const-exp (num) #:transparent)
+
+(struct diff-exp (operand1 operand2) #:transparent)
+
+;; Manual "monadic" recursive-descent parser
+
+(define (parse-prefix-exp lst)
+  (define (parser lst)
+    (match lst
+      [(list '- vs ...) (let* ([r1 (parser vs)]
+                               [o1 (first r1)]
+                               [rst (second r1)]
+                               [r2 (parser rst)]
+                               [o2 (first r2)])
+                          (list (diff-exp o1 o2) (second r2)))]
+      [(list x xs ...) #:when (integer? x) (list (const-exp x) xs)]
+      [_ (error 'parser "Malformed exp: ~s" lst)]))
+  (let ([r (parser lst)])
+    (if (not (empty? (second r)))
+        (error 'parse-prefix-exp "Unbalanced expression, the rest is: ~s" (second r))
+        (first r))))
+
+(let ([exp (diff-exp (const-exp 10) (const-exp -2))])
+  (check-equal? (parse-prefix-exp '(- 10 -2)) exp))
+
+
+
+
 
 
 
