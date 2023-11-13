@@ -238,6 +238,50 @@
 
 
 
+;;; Exercise 2.29
+
+;; I'll use built-in Racket structures for cases but won't gather them into a single union-type
+;; because the match constract works regardles, it's dynamic typing anyway.
+
+; TODO: write checks for constructors' argumets' types
+
+(struct var-exp (var) #:transparent) ; TODO: var is identifier?
+
+(struct lambda-exp (bound-vars body) #:transparent) ; TODO: (list-of identifier?) and lc-exp?
+
+(struct app-exp (rator rands) #:transparent) ; TODO: lc-exp? and (list-of lc-exp?)
+
+(define (lc-exp? exp)
+  (or (var-exp? exp) (lambda-exp? exp) (app-exp? exp)))
+
+
+(define (unparse-lc-exp exp)
+  (match exp
+    [(var-exp var) var]
+    [(lambda-exp vars body) (list 'lambda vars (unparse-lc-exp body))]
+    [(app-exp rator rands) (list (unparse-lc-exp rator) (map unparse-lc-exp rands))]
+    [_ (error 'unparse-lc-exp "Malformed Lc-exp: ~s" exp)]))
+
+
+(define (parse-lc-exp term)
+  (match term
+    [(list rator (list rands ...)) (app-exp (parse-lc-exp rator) (map parse-lc-exp rands))]
+    [(list 'lambda (list vars ...) body) (lambda-exp vars (parse-lc-exp body))]
+    [var #:when (symbol? var) (var-exp var)]))
+
+
+(check-equal? (parse-lc-exp (unparse-lc-exp (var-exp 'foo))) (var-exp 'foo))
+
+(let* ([v (var-exp 'foo)]
+       [exp (lambda-exp '(bar foo) v)])
+  (check-equal? (parse-lc-exp (unparse-lc-exp exp)) exp))
+
+(let* ([u (var-exp 'baz)]
+       [v (var-exp 'foo)]
+       [l (lambda-exp '(bar foo) v)]
+       [exp (app-exp l (list u))])
+  (check-equal? (parse-lc-exp (unparse-lc-exp exp)) exp))
+
 
 
 
